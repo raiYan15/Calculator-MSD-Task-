@@ -9,8 +9,7 @@ A simple, clean, and responsive calculator built using **HTML**, **CSS**, and **
 ---
 
 ## 📸 Preview
-
-![Calculator Preview](Calci.png)  
+(https://github.com/raiYan15/Calculator-MSD-Task-/blob/main/Calci%20.png))  
 *(Add a screenshot named `preview.png` in your repo for this to show)*
 
 ---
