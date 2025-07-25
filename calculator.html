@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the calculator */
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+        }
+        .calculator-body {
+            background: linear-gradient(145deg, #2e2e2e, #1a1a1a);
+            box-shadow: 10px 10px 20px #161616, -10px -10px 20px #3c3c3c;
+        }
+        .calculator-display {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(145deg, #c4d1cc, #e8f5f1);
+            color: #2a3f3c;
+            text-shadow: 0 0 2px rgba(42, 63, 60, 0.5);
+            box-shadow: inset 5px 5px 10px #b8c4bf, inset -5px -5px 10px #ffffff;
+        }
+        .btn {
+            transition: all 0.1s ease-in-out;
+            background: linear-gradient(145deg, #353535, #2d2d2d);
+            box-shadow: 5px 5px 10px #1c1c1c, -5px -5px 10px #444444;
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 5px #1c1c1c, -2px -2px 5px #444444;
+        }
+        .btn-operator {
+            background: linear-gradient(145deg, #4a4a4a, #3e3e3e);
+        }
+        .btn-special {
+            background: linear-gradient(145deg, #3a5a9a, #304c82);
+        }
+        .btn-equals {
+             background: linear-gradient(145deg, #d35400, #e67e22);
+        }
+    </style>
+</head>
+<body class="bg-gray-200 dark:bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <!-- Calculator Body -->
+    <div class="calculator-body w-full max-w-sm mx-auto rounded-2xl p-4 sm:p-6 space-y-4">
+        
+        <!-- Display Screen -->
+        <div class="calculator-display w-full h-24 rounded-lg flex flex-col items-end justify-end p-4">
+            <div id="previous-operand" class="text-xl opacity-60 break-all"></div>
+            <div id="current-operand" class="text-4xl font-bold break-all">0</div>
+        </div>
+
+        <!-- Buttons Grid -->
+        <div class="grid grid-cols-5 gap-3 sm:gap-4">
+            <!-- Row 1 -->
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-memory="mc">MC</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-memory="mr">MR</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-memory="m-plus">M+</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-memory="m-minus">M-</button>
+            <button class="btn btn-special text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="clear">C</button>
+            
+            <!-- Row 2 -->
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>7</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>8</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>9</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="percent">%</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="backspace">←</button>
+
+            <!-- Row 3 -->
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>4</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>5</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>6</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="multiply">×</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="divide">÷</button>
+
+            <!-- Row 4 -->
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>1</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>2</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>3</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="add">+</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="subtract">−</button>
+
+            <!-- Row 5 -->
+            <button class="btn col-span-2 text-white text-xl sm:text-2xl p-3 rounded-lg" data-number>0</button>
+            <button class="btn text-white text-xl sm:text-2xl p-3 rounded-lg" data-number=".">.</button>
+            <button class="btn btn-operator text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="negate">+/-</button>
+            <button class="btn btn-equals text-white text-xl sm:text-2xl p-3 rounded-lg" data-operation="equals">=</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const currentOperandTextElement = document.getElementById('current-operand');
+        const previousOperandTextElement = document.getElementById('previous-operand');
+        const buttons = document.querySelectorAll('button');
+
+        // --- Calculator State ---
+        let currentOperand = '0';
+        let previousOperand = '';
+        let operation = undefined;
+        let memory = 0;
+        let justCalculated = false;
+
+        // --- Core Functions ---
+
+        /**
+         * Clears all calculator state and resets the display.
+         */
+        function clear() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            updateDisplay();
+        }
+
+        /**
+         * Appends a number or decimal point to the current operand.
+         * @param {string} number - The number or '.' to append.
+         */
+        function appendNumber(number) {
+            // If a calculation was just performed, start a new number
+            if (justCalculated) {
+                currentOperand = '';
+                justCalculated = false;
+            }
+            // Reset if current operand is '0' and a new number is pressed
+            if (currentOperand === '0' && number !== '.') {
+                currentOperand = '';
+            }
+            // Prevent multiple decimal points
+            if (number === '.' && currentOperand.includes('.')) return;
+            // Concatenate the new number
+            currentOperand = currentOperand.toString() + number.toString();
+        }
+
+        /**
+         * Deletes the last character from the current operand.
+         */
+        function backspace() {
+            if (justCalculated) return; // Don't backspace a result
+            currentOperand = currentOperand.toString().slice(0, -1);
+            if (currentOperand === '') {
+                currentOperand = '0';
+            }
+        }
+
+        /**
+         * Toggles the sign of the current operand.
+         */
+        function negate() {
+            if (currentOperand === '0') return;
+            currentOperand = (parseFloat(currentOperand) * -1).toString();
+        }
+
+        /**
+         * Converts the current operand to a percentage.
+         */
+        function convertToPercent() {
+            currentOperand = (parseFloat(currentOperand) / 100).toString();
+        }
+
+        /**
+         * Sets the operation and moves operands.
+         * @param {string} op - The chosen operation symbol.
+         */
+        function chooseOperation(op) {
+            if (currentOperand === '' && previousOperand === '') return;
+            // If there's already a pending operation, calculate it first
+            if (previousOperand !== '') {
+                calculate();
+            }
+            operation = op;
+            previousOperand = currentOperand;
+            currentOperand = '';
+            justCalculated = false;
+        }
+
+        /**
+         * Performs the calculation based on state.
+         */
+        function calculate() {
+            let result;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+
+            if (isNaN(prev) || isNaN(current)) return;
+
+            switch (operation) {
+                case 'add':
+                    result = prev + current;
+                    break;
+                case 'subtract':
+                    result = prev - current;
+                    break;
+                case 'multiply':
+                    result = prev * current;
+                    break;
+                case 'divide':
+                    if (current === 0) {
+                        alert("Cannot divide by zero!");
+                        clear();
+                        return;
+                    }
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            currentOperand = result.toString();
+            operation = undefined;
+            previousOperand = '';
+            justCalculated = true;
+        }
+
+        /**
+         * Handles memory functions.
+         * @param {string} memOp - The memory operation (mc, mr, m-plus, m-minus).
+         */
+        function handleMemory(memOp) {
+            const current = parseFloat(currentOperand);
+            if (isNaN(current) && memOp !== 'mr' && memOp !== 'mc') return;
+
+            switch(memOp) {
+                case 'mc': // Memory Clear
+                    memory = 0;
+                    break;
+                case 'mr': // Memory Recall
+                    currentOperand = memory.toString();
+                    break;
+                case 'm-plus': // Memory Add
+                    memory += current;
+                    break;
+                case 'm-minus': // Memory Subtract
+                    memory -= current;
+                    break;
+            }
+        }
+
+        /**
+         * Updates the text content of the display elements.
+         */
+        function updateDisplay() {
+            // Format numbers for better readability
+            const formatNumber = (numStr) => {
+                if (numStr === '' || numStr === null || numStr === undefined) return '';
+                if (numStr.includes('e')) return numStr; // Don't format scientific notation
+                
+                const stringNumber = numStr.toString();
+                const integerDigits = parseFloat(stringNumber.split('.')[0]);
+                const decimalDigits = stringNumber.split('.')[1];
+                let integerDisplay;
+                if (isNaN(integerDigits)) {
+                    integerDisplay = '';
+                } else {
+                    integerDisplay = integerDigits.toLocaleString('en', { maximumFractionDigits: 0 });
+                }
+                if (decimalDigits != null) {
+                    return `${integerDisplay}.${decimalDigits}`;
+                } else {
+                    return integerDisplay;
+                }
+            };
+            
+            currentOperandTextElement.innerText = formatNumber(currentOperand) || '0';
+
+            if (operation != null) {
+                previousOperandTextElement.innerText = `${formatNumber(previousOperand)} ${getOperationSymbol(operation)}`;
+            } else {
+                previousOperandTextElement.innerText = '';
+            }
+        }
+
+        /**
+         * Gets the visual symbol for an operation.
+         * @param {string} op - The operation name.
+         * @returns {string} The symbol.
+         */
+        function getOperationSymbol(op) {
+            switch (op) {
+                case 'add': return '+';
+                case 'subtract': return '−';
+                case 'multiply': return '×';
+                case 'divide': return '÷';
+                default: return '';
+            }
+        }
+
+
+        // --- Event Listener ---
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const { number, operation: op, memory: mem } = button.dataset;
+
+                if (number !== undefined) {
+                    appendNumber(button.innerText);
+                } else if (op !== undefined) {
+                    switch (op) {
+                        case 'clear': clear(); break;
+                        case 'backspace': backspace(); break;
+                        case 'negate': negate(); break;
+                        case 'percent': convertToPercent(); break;
+                        case 'equals': calculate(); break;
+                        default: chooseOperation(op); break;
+                    }
+                } else if (mem !== undefined) {
+                    handleMemory(mem);
+                }
+                
+                updateDisplay();
+            });
+        });
+
+        // Initialize display on load
+        updateDisplay();
+    </script>
+</body>
+</html>
